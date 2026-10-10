@@ -1,0 +1,5 @@
+node_modules/
+*.vsix
+.claude/agentic-office/
+.claude/settings.local.json
+.claude/settings.local.json.agentic-office-*.bak

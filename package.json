@@ -1,0 +1,54 @@
+{
+  "name": "agentic-office",
+  "displayName": "Agentic Office",
+  "publisher": "ndsweeney",
+  "version": "0.1.0",
+  "description": "A live office view for Claude Code agents, powered by local hooks.",
+  "main": "./src/extension.js",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["Visualization", "Other"],
+  "activationEvents": ["onStartupFinished"],
+  "extensionKind": ["workspace"],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "Hook integration writes local Claude settings and reads agent activity."
+    }
+  },
+  "contributes": {
+    "commands": [
+      { "command": "agenticOffice.open", "title": "Agentic Office: Open Office" },
+      { "command": "agenticOffice.installHooks", "title": "Agentic Office: Install Claude Code Hooks" }
+    ],
+    "configuration": {
+      "title": "Agentic Office",
+      "properties": {
+        "agenticOffice.nodePath": {
+          "type": "string",
+          "default": "node",
+          "scope": "machine",
+          "description": "Node.js executable available to Claude Code hooks (Node.js 18 or newer)."
+        },
+        "agenticOffice.departments": {
+          "type": "object",
+          "default": {},
+          "additionalProperties": { "type": "string" },
+          "description": "Map Claude agent types to department names. Unmapped types get their own department."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "test": "node --test",
+    "check": "node --check src/extension.js && node --check src/office.js && node --check src/hooks.js && node --check src/event-reader.js && node --check scripts/claude-hook.js && node --check media/office.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ndsweeney/Agentic-Office"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
