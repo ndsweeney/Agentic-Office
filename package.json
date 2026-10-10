@@ -31,6 +31,18 @@
           "scope": "machine",
           "description": "Node.js executable available to Claude Code hooks (Node.js 18 or newer)."
         },
+        "agenticOffice.theme": {
+          "type": "string",
+          "enum": ["office", "bridge", "lemmings", "worms"],
+          "enumDescriptions": ["Top-down 8-bit office with department rooms.", "Starship bridge with command chairs and console stations.", "Lemmings ledges with trapdoors and exit doors.", "Worms battlefield: floating terrain over water, bazooka duels, explosions when agents finish."],
+          "default": "office",
+          "description": "Visual theme for the office map. Also changeable from the panel's theme selector."
+        },
+        "agenticOffice.copilotSessions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show GitHub Copilot CLI agent sessions (including the agent sessions VS Code runs through the Copilot CLI) read from ~/.copilot/session-state. No hooks are needed."
+        },
         "agenticOffice.departments": {
           "type": "object",
           "default": {},
@@ -42,7 +54,8 @@
   },
   "scripts": {
     "test": "node --test",
-    "check": "node --check src/extension.js && node --check src/office.js && node --check src/hooks.js && node --check src/event-reader.js && node --check scripts/claude-hook.js && node --check media/office.js"
+    "package": "npx --yes @vscode/vsce package --no-dependencies",
+    "check": "node --check src/extension.js && node --check src/office.js && node --check src/hooks.js && node --check src/event-reader.js && node --check src/copilot.js && node --check scripts/claude-hook.js && node --check media/office.js"
   },
   "repository": {
     "type": "git",

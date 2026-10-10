@@ -22,6 +22,8 @@ function normalizeEvent(input) {
     prompt: text(input.prompt),
     tool_name: text(input.tool_name, 100),
     notification_type: text(input.notification_type, 100),
+    model: text(input.model, 100),
+    provider: input.provider === 'copilot' ? 'copilot' : 'claude',
     received_at: text(input.received_at, 50) || new Date().toISOString()
   };
 }
@@ -58,6 +60,7 @@ class Office {
       agent = {
         id, sessionId: event.session_id, agentId: event.agent_id || 'main',
         type: event.agent_type || (event.agent_id ? 'Subagent' : 'Main'),
+        provider: event.provider, model: '',
         task: '', tool: '', cwd: event.cwd, status: 'idle', updatedAt: event.received_at
       };
       this.agents.set(id, agent);
@@ -65,6 +68,7 @@ class Office {
     agent.updatedAt = event.received_at;
     if (event.cwd) agent.cwd = event.cwd;
     if (event.agent_type) agent.type = event.agent_type;
+    if (event.model) agent.model = event.model;
     switch (event.hook_event_name) {
       case 'SessionStart': agent.status = 'idle'; break;
       case 'UserPromptSubmit':

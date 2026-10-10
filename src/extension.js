@@ -5,10 +5,14 @@ const crypto = require('node:crypto');
 const { Office } = require('./office');
 const { hookCommand, mergeHooks } = require('./hooks');
 const { EventReader } = require('./event-reader');
+const { CopilotReader } = require('./copilot');
+
+const THEMES = new Set(['office', 'bridge', 'lemmings', 'worms']);
 
 function activate(context) {
   const office = new Office();
   const readers = new Map();
+  const copilot = new CopilotReader(event => office.apply(event));
   const output = vscode.window.createOutputChannel('Agentic Office');
   let panel;
   let disposed = false;
@@ -24,6 +28,7 @@ function activate(context) {
     const folders = vscode.workspace.workspaceFolders || [];
     const active = new Set(folders.map(folder => folder.uri.toString()));
     for (const key of readers.keys()) if (!active.has(key)) readers.delete(key);
+    copilot.setFolders(folders.map(folder => folder.uri.fsPath));
     for (const folder of folders) {
       const key = folder.uri.toString();
       if (!readers.has(key)) {
@@ -34,15 +39,17 @@ function activate(context) {
 
   function update() {
     if (panel) {
-      const departments = vscode.workspace.getConfiguration('agenticOffice').get('departments', {});
-      panel.webview.postMessage({ type: 'snapshot', agents: office.snapshot(departments) });
+      const config = vscode.workspace.getConfiguration('agenticOffice');
+      const theme = config.get('theme', 'office');
+      panel.webview.postMessage({ type: 'snapshot', agents: office.snapshot(config.get('departments', {})), theme: THEMES.has(theme) ? theme : 'office' });
     }
   }
 
   async function poll() {
     if (disposed) return;
     try {
-      await Promise.all([...readers.values()].map(reader => reader.read()));
+      const copilotEnabled = vscode.workspace.getConfiguration('agenticOffice').get('copilotSessions', true);
+      await Promise.all([...[...readers.values()].map(reader => reader.read()), copilotEnabled ? copilot.read() : Promise.resolve()]);
       errorReported = false;
       update();
     } catch (error) {
@@ -100,6 +107,10 @@ function activate(context) {
       if (message?.type === 'installHooks') {
         installHooks().catch(error => vscode.window.showErrorMessage(`Agentic Office: ${error.message}`));
       }
+      if (message?.type === 'setTheme' && THEMES.has(message.theme)) {
+        vscode.workspace.getConfiguration('agenticOffice').update('theme', message.theme, vscode.ConfigurationTarget.Global)
+          .then(undefined, error => output.appendLine(`Could not save theme: ${error.message}`));
+      }
     }, null, context.subscriptions);
   }
 
@@ -113,7 +124,7 @@ function activate(context) {
       installHooks().catch(error => vscode.window.showErrorMessage(`Agentic Office: ${error.message}`))),
     vscode.workspace.onDidChangeWorkspaceFolders(refreshReaders),
     vscode.workspace.onDidChangeConfiguration(event => {
-      if (event.affectsConfiguration('agenticOffice.departments')) update();
+      if (event.affectsConfiguration('agenticOffice')) update();
     }),
     { dispose() { disposed = true; clearInterval(timer); panel?.dispose(); } }
   );
@@ -129,10 +140,14 @@ function html(webview, extensionUri) {
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
 <link rel="stylesheet" href="${css}"><title>Agentic Office</title></head>
 <body>
-<header><div><h1>Agentic Office</h1><p>Claude Code · live local activity</p></div><button id="install">Install Claude hooks</button></header>
-<nav aria-label="Status legend"><span class="working">● Working</span><span class="waiting">● Waiting</span><span class="idle">● Idle</span><span class="finished">● Finished</span></nav>
-<main><section id="office" aria-label="Office departments"></section>
-<aside id="details" aria-label="Agent details"><h2>Agent inspector</h2><p>Select a dot at a desk to inspect an agent.</p></aside></main>
+<header><div><h1>Agentic Office</h1><p>Claude Code + Copilot · live local activity</p></div>
+<div class="controls"><label for="theme">Theme</label><select id="theme" class="pixel-box"><option value="office">8-bit office</option><option value="bridge">Starship bridge</option><option value="lemmings">Lemmings</option><option value="worms">Worms</option></select><button id="install" class="pixel-box">Install Claude hooks</button></div></header>
+<nav aria-label="Status legend"><span class="working">Working</span><span class="waiting">Waiting</span><span class="idle">Idle</span><span class="finished">Finished</span></nav>
+<main><section id="office" class="pixel-box" aria-label="Office map">
+<div id="stage"><canvas id="map" aria-hidden="true"></canvas><div id="overlay" role="group" aria-label="Agents at desks"></div></div>
+<div id="empty" class="empty"><h2>Your office is ready</h2><p>Install hooks, then start Claude Code in this workspace. Workers appear at desks as activity arrives.</p><p>Requires Node.js 18+ in Claude’s environment. No connection to private VS Code extension APIs is needed.</p></div>
+</section>
+<aside id="details" class="pixel-box" aria-label="Agent details"><h2>Agent inspector</h2><p>Select a worker at a desk to inspect that agent.</p></aside></main>
 <p class="note">Status is inferred from hooks, not a heartbeat. Task previews are available for the main session; subagent tasks are not supplied by lifecycle hooks.</p>
 <script nonce="${nonce}" src="${js}"></script></body></html>`;
 }

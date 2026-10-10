@@ -8,6 +8,53 @@ const events = new Set([
   'PostToolUseFailure', 'PermissionRequest', 'Notification', 'Stop',
   'SubagentStart', 'SubagentStop', 'SessionEnd'
 ]);
+const TAIL = 64 * 1024;
+
+// Reads only the last 64 KiB of a transcript to find the model of the latest assistant turn.
+// No transcript text is kept; the model name is the only thing extracted.
+function modelFromTranscript(file) {
+  if (typeof file !== 'string' || !path.isAbsolute(file)) return '';
+  let handle;
+  try {
+    handle = fs.openSync(file, 'r');
+    const size = fs.fstatSync(handle).size;
+    const length = Math.min(TAIL, size);
+    const buffer = Buffer.alloc(length);
+    fs.readSync(handle, buffer, 0, length, size - length);
+    const matches = buffer.toString('utf8').match(/"model":"([^"]{1,100})"/g) || [];
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const model = matches[i].slice(9, -1);
+      if (model && !model.startsWith('<')) return model;
+    }
+  } catch {
+    // Missing or unreadable transcripts simply leave the model unknown.
+  } finally {
+    if (handle !== undefined) fs.closeSync(handle);
+  }
+  return '';
+}
+
+function expandHome(file) {
+  return file.startsWith('~') ? path.join(require('node:os').homedir(), file.slice(1)) : file;
+}
+
+function resolveModel(payload) {
+  if (typeof payload.model === 'string' && payload.model) return payload.model;
+  const candidates = [];
+  if (typeof payload.agent_transcript_path === 'string') candidates.push(payload.agent_transcript_path);
+  if (typeof payload.agent_id === 'string' && payload.agent_id && typeof payload.transcript_path === 'string') {
+    const main = payload.transcript_path;
+    const base = path.basename(main, path.extname(main));
+    candidates.push(path.join(path.dirname(main), base, 'subagents', 'agent-' + payload.agent_id + '.jsonl'));
+  }
+  if (typeof payload.transcript_path === 'string') candidates.push(payload.transcript_path);
+  for (const candidate of candidates) {
+    const model = modelFromTranscript(expandHome(candidate));
+    if (model) return model;
+  }
+  return '';
+}
+
 const outputIndex = process.argv.indexOf('--output');
 const output = outputIndex >= 0 ? process.argv[outputIndex + 1] : '';
 let input = '';
@@ -34,6 +81,8 @@ process.stdin.on('end', () => {
     for (const [key, limit] of Object.entries(limits)) {
       if (typeof payload[key] === 'string') event[key] = payload[key].slice(0, limit);
     }
+    const model = resolveModel(payload);
+    if (model) event.model = model.slice(0, 100);
     fs.mkdirSync(path.dirname(output), { recursive: true, mode: 0o700 });
     fs.appendFileSync(output, JSON.stringify(event) + '\n', { mode: 0o600 });
   } catch {

@@ -1,20 +1,38 @@
 # Agentic Office
 
-A dependency-free VS Code extension that shows Claude Code agents as colored
-dots at department desks. It runs **alongside** Claude for VS Code, not inside
+A dependency-free VS Code extension that shows Claude Code and GitHub Copilot
+agents as pixel-art workers in a retro map, one desk per agent. Pick an 8-bit
+office, a starship bridge, a Lemmings level, or a Worms battlefield from the
+panel's theme selector. It runs **alongside** Claude for VS Code, not inside
 Claude's chat panel, and uses Claude's command hooks rather than private extension APIs.
 
-## Run it
+## Install
 
 1. Install Node.js 18+ where Claude Code runs and use VS Code 1.85+.
-2. Open this repository in VS Code and press **F5** to launch the extension
-   development host. No dependency installation or compilation is required.
-3. In that host, open the trusted workspace where you use Claude Code.
-4. Run **Agentic Office: Open Office** from the Command Palette.
+2. Build the package from this repository:
+
+   ```
+   npm run package
+   ```
+
+   This produces `agentic-office-<version>.vsix` (no dependencies to install;
+   the packaging tool is fetched on demand).
+3. Install it with **Extensions: Install from VSIX** in VS Code, or from a terminal:
+
+   ```
+   code --install-extension agentic-office-0.1.0.vsix
+   ```
+
+   Use `code-insiders` for VS Code Insiders.
+4. Open the trusted workspace where you use Claude Code and run
+   **Agentic Office: Open Office** from the Command Palette.
 5. Click **Install Claude hooks** (or run **Agentic Office: Install Claude Code Hooks**).
    Choose a folder if using a multi-root workspace, and approve the local settings change.
 6. Restart Claude Code or start a new session to load hooks. Submit a prompt or
-   launch subagents; their desks appear as events arrive.
+   launch subagents; they appear as events arrive. Copilot CLI sessions need no setup.
+
+To hack on it instead, open this repository in VS Code and press **F5** to launch
+the extension development host.
 
 If `node` is not on Claude's PATH, set `agenticOffice.nodePath` to its executable's
 absolute path before installing hooks. This is a machine-scoped setting. For SSH,
@@ -22,20 +40,83 @@ WSL, or containers, install/run the extension and Node on that workspace host.
 Windows hook commands target Claude Code's Git Bash shell, not CMD or PowerShell.
 The office polls local activity every 750 ms; it does not require a server or port.
 
-To package for installation, use the standard VS Code extension packaging
-workflow (`vsce package`) and **Extensions: Install from VSIX**. Packaging tools
-are not bundled with this repository.
-
 ## Office and inspector
 
-- Main sessions sit in **Coordination**; subagent types form their own departments.
-- Each agent has its own desk, keyed by session and agent ID. Parallel agents
-  with the same type remain separate. Click a dot (or focus it and press Enter)
-  to inspect status, prompt preview, last tool, IDs, workspace, and last activity.
-- Map agent types to departments using the `agenticOffice.departments` setting
-  (for example, map `Explore` to `Research`). Changes apply immediately.
-- Colors and accessible labels indicate **working** (green), **waiting** (amber),
-  **idle** (blue), or **finished** (muted). Motion respects reduced-motion preferences.
+- **Themes.** The theme selector in the panel header switches between four
+  live scenes, saved to the `agenticOffice.theme` user setting:
+  - **8-bit office**: one open-plan floor with a desk pod per department, floor
+    signs, plants, a water cooler, printer, coffee machine and sofa. Workers
+    wander between desks, shout office nonsense in speech bubbles, and attack
+    each other with staplers, keyboards, mugs, swivel chairs, monitors and
+    rubber bands. Victims stagger, flash and complain. New agents fade in; a
+    finished agent leaves in a puff of smoke with "HOME TIME!".
+  - **Starship bridge**: a TNG-style bridge seen from above: main viewer up
+    front with CONN and OPS below it, the captain's chair flanked by the first
+    officer and counselor on the red command platform, a horseshoe railing with
+    tactical behind them, the curved science and engineering console bank aft,
+    turbolifts, ready room and lounge doors. Main sessions take the command
+    chairs; subagents fill the stations in order and overflow to standing
+    positions. Crew **beam in** with a transporter sparkle on start and beam out
+    on finish, wander the deck, and now and then draw a phaser on a colleague
+    for no reason while shouting for the Empire.
+  - **Lemmings**: a single ledge spanning the map with one entrance hatch and
+    sign per department along the top and one exit door at the right. Lemmings
+    walk the whole level end to end and scuffle when they bump into each other.
+    A finished agent says "OH NO!" and pops.
+  - **Worms**: a destructible-terrain battle (see below).
+- **Only active agents are drawn.** Agents that are working or waiting have a
+  place on the map; idle and finished agents are left out so the map stays
+  readable. When nothing is active the map says so.
+- **Resizing never resets the action.** Positions scale with the map, so
+  dragging the panel wider or narrower keeps fights, walks and turns going.
+- **Model tags.** Each worker carries a small label with the model running under
+  it (for example `fable-5-1` or `gpt-5.4`) as soon as it is known.
+- Each agent is keyed by session and agent ID, so parallel agents of the same
+  type remain separate. Click a worker (or Tab to it and press Enter) to open
+  the inspector with status, model, provider, prompt preview, last tool, IDs,
+  workspace and last activity. Click empty map space or press Escape to close it.
+- Main sessions form **Coordination**; subagent types form their own
+  departments. Map agent types to departments using the `agenticOffice.departments`
+  setting (for example, map `Explore` to `Research`). Changes apply immediately.
+- Waiting agents show a blinking `?`. Reduced-motion settings freeze all scenes.
+
+## Worms theme
+
+The Worms map is a live, physics-driven arena. Two continents of destructible
+terrain face each other across a narrow channel with a very small sea at the
+bottom; the land runs to the bottom of the map and nobody can enter the channel,
+so no agent ever drowns. Each department is a team with its own color, shown
+with a health bar in the top-left corner.
+
+- **New agents parachute in** from the top of the map, drifting with the wind,
+  and land wherever the terrain catches them.
+- **Worms move on their own**: they wander, climb small slopes, hop, and fall
+  into the craters that weapons have dug.
+- **Teams take turns** firing at rival teams with a random weapon: bazooka
+  (wind-affected), grenade, shotgun, holy hand grenade, air strike, super sheep,
+  **mad cow** (thrown in an arc, then charges along the ground until it goes
+  off with a "MOOOO!"), dynamite, or banana bomb. Every blast eats a hole out of
+  the map, and that damage survives resizes, so a long session leaves the
+  landscape in ruins. Hits knock worms flying, deduct health, and leave floating
+  damage numbers and quips. A worm that reaches zero health is blown up, leaves
+  a gravestone, and respawns by parachute as reinforcements.
+- **A finished agent's worm explodes** and leaves a gravestone with its name.
+- Health, craters and gravestones are cosmetic; the real agent status still
+  comes from hooks. Only working agents move and fire. Waiting agents stand
+  still holding a `?`.
+
+## GitHub Copilot sessions
+
+Copilot CLI writes an event log for every session to
+`~/.copilot/session-state/<id>/events.jsonl` (or `$COPILOT_HOME/session-state`).
+That includes the agent sessions VS Code's Copilot Chat runs through the CLI.
+The extension tails logs modified in the last 12 hours whose working directory
+is inside an open workspace folder and shows them alongside Claude agents, with
+the model name Copilot reports. No hooks are needed. Session start, model
+changes, prompts, tool calls, subagent starts, final answers, and shutdown are
+mapped onto the same statuses as the Claude hooks below. Copilot Chat's
+in-editor agent mode without the CLI does not write this log and is not shown.
+Disable with the `agenticOffice.copilotSessions` setting.
 
 ## Hook contract and limits
 
@@ -51,7 +132,10 @@ are not bundled with this repository.
 | `SubagentStop` | Subagent is finished |
 | `SessionEnd` | All agents belonging to the session are finished |
 
-Inputs use `hook_event_name`, `session_id`, and optional `cwd`. Tool events use
+Inputs use `hook_event_name`, `session_id`, and optional `cwd`. The model name
+comes from `model` on `SessionStart` when Claude supplies it; otherwise the bridge
+reads the **last 64 KiB** of the session transcript (or the subagent transcript
+for events carrying `agent_id`) and keeps only the latest `model` value. Tool events use
 `agent_id` and `agent_type` **when supplied**; without `agent_id` they update the
 main session. A main session may have an `agent_type` without being a subagent.
 Lifecycle hooks identify subagents but do **not** provide their assigned prompt;
@@ -90,9 +174,10 @@ reinstalled if you move the workspace or switch VS Code profiles.
 The bridge emits no hook decisions or stdout and fails open; visualization errors
 must not interrupt Claude. Payloads larger than 1 MiB are ignored.
 
-Only IDs, agent type, workspace path, event name, last tool name, notification type,
-timestamp, and **up to 500 characters of your prompt** are persisted. Tool inputs,
-outputs, credentials, and transcripts are not collected; prompts may nevertheless
+Only IDs, agent type, model name, workspace path, event name, last tool name,
+notification type, timestamp, and **up to 500 characters of your prompt** are
+persisted. Tool inputs, outputs, credentials, and transcript text are not
+collected (the transcript is opened only to read the model name); prompts may nevertheless
 contain sensitive information. Install only if you accept local prompt storage.
 Files/directories created for activity use owner-only permissions on POSIX;
 Windows uses the storage directory's inherited ACLs. No activity is sent over a network.
@@ -109,7 +194,8 @@ private values and should not be committed.
 
 ## Development
 
-- `npm test`: Node's built-in tests for agent state, hook merging/quoting, and the bridge/reader.
+- `npm test`: Node's built-in tests for agent state, hook merging/quoting, the bridge/reader,
+  model extraction, and the Copilot session translator.
 - `npm run check`: syntax checks for all production JavaScript.
 - F5: manually test the extension host, hook installation, and webview interactions.
 
