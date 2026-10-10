@@ -711,10 +711,10 @@
   // =====================================================================
   const WALK_SPEED = 22;
   const lemmings = {
-    label: 'Lemmings',
+    label: 'Platform critters',
     fps: 12,
     minTiles: 12,
-    emptyText: 'WAITING FOR LEMMINGS',
+    emptyText: 'WAITING FOR CRITTERS',
     quietText: 'LEVEL CLEAR',
     P: {
       sky: '#0a0a12', rockA: '#4a2c5a', rockB: '#6a3f7a', rockC: '#2e1a3a',
@@ -1335,10 +1335,10 @@
   const world = new WormWorld();
 
   const worms = {
-    label: 'Worms',
+    label: 'Battle',
     fps: 30,
     minTiles: 16,
-    emptyText: 'WAITING FOR WORMS',
+    emptyText: 'WAITING FOR FIGHTERS',
     quietText: 'CEASEFIRE',
     teams: ['#55e055', '#55e0e0', '#ff66ff', '#ff5555', '#ffee55', '#ff9966', '#9999ff', '#ffffff'],
     P: {
@@ -1504,7 +1504,8 @@
     }
   };
 
-  const THEMES = { office, bridge, lemmings, worms };
+  const THEMES = { office, bridge, critters: lemmings, battle: worms };
+  const THEME_ALIASES = { lemmings: 'critters', worms: 'battle' }; // earlier setting values
 
   // ---------- positions ----------
   function positionOf(desk, room) {
@@ -1576,7 +1577,8 @@
     raf = requestAnimationFrame(tick);
   }
 
-  function applyTheme(next) {
+  function applyTheme(requested) {
+    const next = THEME_ALIASES[requested] || requested;
     if (!THEMES[next] || next === theme) return;
     theme = next;
     document.body.dataset.theme = theme;

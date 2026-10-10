@@ -33,8 +33,8 @@
         },
         "agenticOffice.theme": {
           "type": "string",
-          "enum": ["office", "bridge", "lemmings", "worms"],
-          "enumDescriptions": ["Top-down 8-bit office with department rooms.", "Starship bridge with command chairs and console stations.", "Lemmings ledges with trapdoors and exit doors.", "Worms battlefield: floating terrain over water, bazooka duels, explosions when agents finish."],
+          "enum": ["office", "bridge", "critters", "battle"],
+          "enumDescriptions": ["Open-plan 8-bit office with desk pods, wandering workers and office brawls.", "Starship bridge with command chairs, console stations, transporter arrivals and phaser mishaps.", "Platform critters: one ledge, entrance hatches, an exit door, and scuffles when critters meet.", "Battle: destructible two-continent terrain, parachute drops, turn-based weapons, explosions when agents finish."],
           "default": "office",
           "description": "Visual theme for the office map. Also changeable from the panel's theme selector."
         },
@@ -61,7 +61,11 @@
     "type": "git",
     "url": "https://github.com/ndsweeney/Agentic-Office"
   },
-  "keywords": [],
-  "author": "",
+  "homepage": "https://github.com/ndsweeney/Agentic-Office#readme",
+  "bugs": { "url": "https://github.com/ndsweeney/Agentic-Office/issues" },
+  "icon": "images/icon.png",
+  "galleryBanner": { "color": "#1a1c2c", "theme": "dark" },
+  "keywords": ["claude", "claude code", "copilot", "agents", "ai", "visualization", "pixel art", "retro", "hooks"],
+  "author": "Nathan Sweeney",
   "license": "ISC"
 }

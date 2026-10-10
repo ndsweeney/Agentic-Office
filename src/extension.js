@@ -7,7 +7,8 @@ const { hookCommand, mergeHooks } = require('./hooks');
 const { EventReader } = require('./event-reader');
 const { CopilotReader } = require('./copilot');
 
-const THEMES = new Set(['office', 'bridge', 'lemmings', 'worms']);
+const THEMES = new Set(['office', 'bridge', 'critters', 'battle']);
+const THEME_ALIASES = { lemmings: 'critters', worms: 'battle' }; // values from earlier builds
 
 function activate(context) {
   const office = new Office();
@@ -40,7 +41,7 @@ function activate(context) {
   function update() {
     if (panel) {
       const config = vscode.workspace.getConfiguration('agenticOffice');
-      const theme = config.get('theme', 'office');
+      const theme = THEME_ALIASES[config.get('theme')] || config.get('theme', 'office');
       panel.webview.postMessage({ type: 'snapshot', agents: office.snapshot(config.get('departments', {})), theme: THEMES.has(theme) ? theme : 'office' });
     }
   }
@@ -141,7 +142,7 @@ function html(webview, extensionUri) {
 <link rel="stylesheet" href="${css}"><title>Agentic Office</title></head>
 <body>
 <header><div><h1>Agentic Office</h1><p>Claude Code + Copilot · live local activity</p></div>
-<div class="controls"><label for="theme">Theme</label><select id="theme" class="pixel-box"><option value="office">8-bit office</option><option value="bridge">Starship bridge</option><option value="lemmings">Lemmings</option><option value="worms">Worms</option></select><button id="install" class="pixel-box">Install Claude hooks</button></div></header>
+<div class="controls"><label for="theme">Theme</label><select id="theme" class="pixel-box"><option value="office">8-bit office</option><option value="bridge">Starship bridge</option><option value="critters">Platform critters</option><option value="battle">Battle</option></select><button id="install" class="pixel-box">Install Claude hooks</button></div></header>
 <nav aria-label="Status legend"><span class="working">Working</span><span class="waiting">Waiting</span><span class="idle">Idle</span><span class="finished">Finished</span></nav>
 <main><section id="office" class="pixel-box" aria-label="Office map">
 <div id="stage"><canvas id="map" aria-hidden="true"></canvas><div id="overlay" role="group" aria-label="Agents at desks"></div></div>

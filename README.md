@@ -1,9 +1,21 @@
 # Agentic Office
 
-A dependency-free VS Code extension that shows Claude Code and GitHub Copilot
-agents as pixel-art workers in a retro map, one desk per agent. Pick an 8-bit
-office, a starship bridge, a Lemmings level, or a Worms battlefield from the
-panel's theme selector. It runs **alongside** Claude for VS Code, not inside
+**Watch your AI agents work, wander, squabble and blow things up, live in a
+pixel-art side panel.** Agentic Office turns Claude Code and GitHub Copilot
+activity into a retro scene: one worker per agent, with its model name, moving
+through an 8-bit office, a starship bridge, a platform-critters level, or a
+battle arena on destructible terrain. Everything runs locally from Claude's
+hooks and Copilot's session logs; nothing leaves your machine.
+
+| 8-bit office | Starship bridge |
+| --- | --- |
+| ![Open-plan office with desk pods, roaming workers and speech bubbles](images/office.png) | ![Starship bridge with command chairs, consoles and crew](images/bridge.png) |
+
+| Platform critters | Battle |
+| --- | --- |
+| ![One ledge with hatches, an exit door and scuffling critters](images/critters.png) | ![Two continents of destructible terrain with a turn in progress](images/battle.png) |
+
+It is a dependency-free extension that runs **alongside** Claude for VS Code, not inside
 Claude's chat panel, and uses Claude's command hooks rather than private extension APIs.
 
 ## Install
@@ -50,7 +62,7 @@ The office polls local activity every 750 ms; it does not require a server or po
     each other with staplers, keyboards, mugs, swivel chairs, monitors and
     rubber bands. Victims stagger, flash and complain. New agents fade in; a
     finished agent leaves in a puff of smoke with "HOME TIME!".
-  - **Starship bridge**: a TNG-style bridge seen from above: main viewer up
+  - **Starship bridge**: a classic starship bridge seen from above: main viewer up
     front with CONN and OPS below it, the captain's chair flanked by the first
     officer and counselor on the red command platform, a horseshoe railing with
     tactical behind them, the curved science and engineering console bank aft,
@@ -59,11 +71,11 @@ The office polls local activity every 750 ms; it does not require a server or po
     positions. Crew **beam in** with a transporter sparkle on start and beam out
     on finish, wander the deck, and now and then draw a phaser on a colleague
     for no reason while shouting for the Empire.
-  - **Lemmings**: a single ledge spanning the map with one entrance hatch and
-    sign per department along the top and one exit door at the right. Lemmings
-    walk the whole level end to end and scuffle when they bump into each other.
-    A finished agent says "OH NO!" and pops.
-  - **Worms**: a destructible-terrain battle (see below).
+  - **Platform critters**: a single ledge spanning the map with one entrance
+    hatch and sign per department along the top and one exit door at the right.
+    Green-haired critters walk the whole level end to end and scuffle when they
+    bump into each other. A finished agent says "OH NO!" and pops.
+  - **Battle**: a destructible-terrain battle (see below).
 - **Only active agents are drawn.** Agents that are working or waiting have a
   place on the map; idle and finished agents are left out so the map stays
   readable. When nothing is active the map says so.
@@ -80,9 +92,9 @@ The office polls local activity every 750 ms; it does not require a server or po
   setting (for example, map `Explore` to `Research`). Changes apply immediately.
 - Waiting agents show a blinking `?`. Reduced-motion settings freeze all scenes.
 
-## Worms theme
+## Battle theme
 
-The Worms map is a live, physics-driven arena. Two continents of destructible
+The Battle map is a live, physics-driven arena. Two continents of destructible
 terrain face each other across a narrow channel with a very small sea at the
 bottom; the land runs to the bottom of the map and nobody can enter the channel,
 so no agent ever drowns. Each department is a team with its own color, shown
@@ -90,17 +102,17 @@ with a health bar in the top-left corner.
 
 - **New agents parachute in** from the top of the map, drifting with the wind,
   and land wherever the terrain catches them.
-- **Worms move on their own**: they wander, climb small slopes, hop, and fall
+- **Fighters move on their own**: they wander, climb small slopes, hop, and fall
   into the craters that weapons have dug.
 - **Teams take turns** firing at rival teams with a random weapon: bazooka
   (wind-affected), grenade, shotgun, holy hand grenade, air strike, super sheep,
   **mad cow** (thrown in an arc, then charges along the ground until it goes
   off with a "MOOOO!"), dynamite, or banana bomb. Every blast eats a hole out of
   the map, and that damage survives resizes, so a long session leaves the
-  landscape in ruins. Hits knock worms flying, deduct health, and leave floating
-  damage numbers and quips. A worm that reaches zero health is blown up, leaves
+  landscape in ruins. Hits knock fighters flying, deduct health, and leave floating
+  damage numbers and quips. A fighter that reaches zero health is blown up, leaves
   a gravestone, and respawns by parachute as reinforcements.
-- **A finished agent's worm explodes** and leaves a gravestone with its name.
+- **A finished agent's fighter explodes** and leaves a gravestone with its name.
 - Health, craters and gravestones are cosmetic; the real agent status still
   comes from hooks. Only working agents move and fire. Waiting agents stand
   still holding a `?`.
