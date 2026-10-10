@@ -19,6 +19,7 @@ Claude's chat panel, and uses Claude's command hooks rather than private extensi
 If `node` is not on Claude's PATH, set `agenticOffice.nodePath` to its executable's
 absolute path before installing hooks. This is a machine-scoped setting. For SSH,
 WSL, or containers, install/run the extension and Node on that workspace host.
+Windows hook commands target Claude Code's Git Bash shell, not CMD or PowerShell.
 The office polls local activity every 750 ms; it does not require a server or port.
 
 To package for installation, use the standard VS Code extension packaging

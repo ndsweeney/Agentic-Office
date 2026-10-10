@@ -79,3 +79,12 @@ test('office bounds agent count and retires finished agents first', () => {
   assert.equal(office.apply(event('SubagentStart', { agent_id: 'c' })), true);
   assert.deepEqual(office.snapshot().map(agent => agent.agentId), ['b', 'c']);
 });
+
+test('session end cleans up a full office even when the main desk was never captured', () => {
+  const office = new Office();
+  office.maxAgents = 1;
+  office.apply(event('SubagentStart', { agent_id: 'a' }));
+  assert.equal(office.apply(event('SessionEnd')), true);
+  assert.equal(office.snapshot()[0].status, 'finished');
+  assert.equal(office.apply(event('SessionStart', { session_id: 'next' })), true);
+});

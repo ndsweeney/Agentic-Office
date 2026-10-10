@@ -37,6 +37,16 @@ class Office {
     if (!event) return false;
     const isSubagent = event.hook_event_name.startsWith('Subagent');
     if (isSubagent && !event.agent_id) return false;
+    if (event.hook_event_name === 'SessionEnd') {
+      for (const item of this.agents.values()) {
+        if (item.sessionId === event.session_id) {
+          item.status = 'finished';
+          item.tool = '';
+          item.updatedAt = event.received_at;
+        }
+      }
+      return true;
+    }
     const id = JSON.stringify([event.session_id, event.agent_id || null]);
     let agent = this.agents.get(id);
     if (!agent) {
@@ -80,15 +90,6 @@ class Office {
         break;
       case 'Stop': agent.status = 'idle'; agent.tool = ''; break;
       case 'SubagentStop': agent.status = 'finished'; agent.tool = ''; break;
-      case 'SessionEnd':
-        for (const item of this.agents.values()) {
-          if (item.sessionId === event.session_id) {
-            item.status = 'finished';
-            item.tool = '';
-            item.updatedAt = event.received_at;
-          }
-        }
-        break;
     }
     return true;
   }

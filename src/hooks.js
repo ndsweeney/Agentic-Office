@@ -1,18 +1,14 @@
 const { EVENTS } = require('./office');
 
-function quoteShell(value, windows = process.platform === 'win32') {
+function quoteShell(value) {
   if (typeof value !== 'string' || !value || /[\r\n\0]/.test(value)) {
     throw new Error('Hook command paths must be nonempty and contain no line breaks.');
-  }
-  if (windows) {
-    if (/["%!]/.test(value)) throw new Error('Windows hook paths cannot contain quotes, %, or !.');
-    return `"${value}"`;
   }
   return "'" + value.replace(/'/g, "'\\''") + "'";
 }
 
-function hookCommand(node, script, output, windows) {
-  return `${quoteShell(node, windows)} ${quoteShell(script, windows)} --agentic-office --output ${quoteShell(output, windows)}`;
+function hookCommand(node, script, output) {
+  return `${quoteShell(node)} ${quoteShell(script)} --agentic-office --output ${quoteShell(output)}`;
 }
 
 function mergeHooks(settings, command) {
